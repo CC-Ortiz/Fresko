@@ -1,14 +1,49 @@
+import java.time.LocalDate;
+
 public class Producto {
     private String codigo;
     private String nombre;
+    private String categoria;
     private int cantidad;
-    private String fechaVencimiento; // Se puede usar String o LocalDate según prefieras
+    private double precio;
+    private String fechaVencimiento;
 
-    public Producto(String codigo, String nombre, int cantidad, String fechaVencimiento) {
-        this.codigo = codigo;
-        this.nombre = nombre;
+    public Producto(String codigo, String nombre, String categoria,
+                    int cantidad, double precio, String fechaVencimiento) {
+
+        if (codigo == null || codigo.trim().isEmpty()) {
+            throw new IllegalArgumentException("El código no puede estar vacío.");
+        }
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío.");
+        }
+        if (categoria == null || categoria.trim().isEmpty()) {
+            throw new IllegalArgumentException("La categoría no puede estar vacía.");
+        }
+        if (cantidad < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa.");
+        }
+        if (!Double.isFinite(precio) || precio < 0) {
+            throw new IllegalArgumentException("El precio debe ser un número válido y no negativo.");
+        }
+        if (fechaVencimiento == null || fechaVencimiento.trim().isEmpty()) {
+            throw new IllegalArgumentException("La fecha de vencimiento es obligatoria.");
+        }
+
+        String fechaLimpia = fechaVencimiento.trim();
+        try {
+            LocalDate.parse(fechaLimpia); // Formato ISO: AAAA-MM-DD
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException(
+                    "La fecha debe ser válida y tener el formato AAAA-MM-DD.");
+        }
+
+        this.codigo = codigo.trim();
+        this.nombre = nombre.trim();
+        this.categoria = categoria.trim();
         this.cantidad = cantidad;
-        this.fechaVencimiento = fechaVencimiento;
+        this.precio = precio;
+        this.fechaVencimiento = fechaLimpia;
     }
 
     public String getCodigo() {
@@ -19,8 +54,16 @@ public class Producto {
         return nombre;
     }
 
+    public String getCategoria() {
+        return categoria;
+    }
+
     public int getCantidad() {
         return cantidad;
+    }
+
+    public double getPrecio() {
+        return precio;
     }
 
     public String getFechaVencimiento() {
@@ -29,6 +72,11 @@ public class Producto {
 
     @Override
     public String toString() {
-        return "Código: " + codigo + " | Nombre: " + nombre + " | Cantidad: " + cantidad + " | Vencimiento: " + fechaVencimiento;
+        return "Código: " + codigo
+                + " | Nombre: " + nombre
+                + " | Categoría: " + categoria
+                + " | Cantidad: " + cantidad
+                + " | Precio: $" + String.format(java.util.Locale.US, "%.2f", precio)
+                + " | Vencimiento: " + fechaVencimiento;
     }
-}.
+}
