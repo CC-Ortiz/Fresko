@@ -1,5 +1,5 @@
-import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 public class Inventario {
@@ -89,6 +89,35 @@ public class Inventario {
                 producto -> LocalDate.parse(producto.getFechaVencimiento())));
 
         return proximosAVencer;
+    }
+
+    // HU-05: identifica y lista los productos cuya fecha de vencimiento es anterior a la actual.
+    public ArrayList<Producto> consultarVencidos() {
+        return consultarVencidos(LocalDate.now());
+    }
+
+    // Sobrecarga de HU-05 para facilitar pruebas con fechas específicas.
+    public ArrayList<Producto> consultarVencidos(LocalDate fechaActual) {
+        ArrayList<Producto> listaVencidos = new ArrayList<>();
+
+        if (fechaActual == null) {
+            return listaVencidos;
+        }
+
+        for (Producto producto : listaProductos) {
+            LocalDate fechaVencimiento = LocalDate.parse(producto.getFechaVencimiento());
+
+            // Si la fecha de vencimiento es anterior a la fecha actual, ya venció
+            if (fechaVencimiento.isBefore(fechaActual)) {
+                listaVencidos.add(producto);
+            }
+        }
+
+        // Ordenarlos por fecha de vencimiento
+        listaVencidos.sort(Comparator.comparing(
+                producto -> LocalDate.parse(producto.getFechaVencimiento())));
+
+        return listaVencidos;
     }
 
     // HU-02: busca por código sin modificar el inventario.
