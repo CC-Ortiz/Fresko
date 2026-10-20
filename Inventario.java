@@ -1,29 +1,39 @@
 import java.util.ArrayList;
 
 public class Inventario {
-    private ArrayList<Producto> listaProductos;
+    private final ArrayList<Producto> listaProductos;
 
     public Inventario() {
-        this.listaProductos = new ArrayList<>();
+        listaProductos = new ArrayList<>();
     }
 
-    // Método de apoyo para registrar productos (útil para pruebas)
-    public void agregarProducto(Producto producto) {
+    //no agrega productos nulos ni códigos repetidos.
+    public boolean agregarProducto(Producto producto) {
+        if (producto == null || buscarProducto(producto.getCodigo()) != null) {
+            return false;
+        }
+
         listaProductos.add(producto);
+        return true;
     }
 
-    // Tarea: Implementar listarProductos() utilizando ArrayList y separando la lógica
+    //devuelve una copia para separar la consulta del almacenamiento interno.
     public ArrayList<Producto> listarProductos() {
-        return listaProductos;
+        return new ArrayList<>(listaProductos);
     }
 
-    // Tarea: Implementar buscarProducto() recorriendo con for-each
+    //busca por código sin modificar el inventario.
     public Producto buscarProducto(String codigo) {
-        for (Producto p : listaProductos) {
-            if (p.getCodigo().equalsIgnoreCase(codigo)) {
-                return p;
+        if (codigo == null || codigo.trim().isEmpty()) {
+            return null;
+        }
+
+        for (Producto producto : listaProductos) {
+            if (producto.getCodigo().equalsIgnoreCase(codigo.trim())) {
+                return producto;
             }
         }
-        return null; // Retorna null si el código no existe
+
+        return null;
     }
-}.
+}
