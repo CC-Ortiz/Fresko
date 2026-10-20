@@ -6,6 +6,11 @@ public class Main {
         Inventario inventario = new Inventario();
         Scanner scanner = new Scanner(System.in);
 
+        // Productos de prueba para la HU-02.
+        inventario.agregarProducto(new Producto(
+                "P001", "Manzana Roja", "Frutas", 30, 2000.00, "2026-12-20"));
+        inventario.agregarProducto(new Producto(
+                "P002", "Banano Criollo", "Frutas", 45, 1500.00, "2026-12-15"));
 
         int opcion = 0;
 
@@ -13,8 +18,10 @@ public class Main {
             System.out.println("\n--- GESTIÓN DE INVENTARIO - FRESKO ---");
             System.out.println("1. Listar productos");
             System.out.println("2. Buscar producto por código");
-            System.out.println("3. Salir");
-            System.out.println("4. Registrar producto (HU-01)");
+            System.out.println("3. Registrar producto");
+            System.out.println("4. Registrar entrada de existencias");
+            System.out.println("5. Registrar salida de existencias");
+            System.out.println("6. Salir");
             System.out.print("Seleccione una opción: ");
 
             try {
@@ -49,11 +56,19 @@ public class Main {
                         break;
 
                     case 3:
-                        System.out.println("\nSaliendo del módulo de inventario...");
+                        registrarProducto(inventario, scanner);
                         break;
 
                     case 4:
-                        registrarProducto(inventario, scanner);
+                        registrarMovimiento(inventario, scanner, true);
+                        break;
+
+                    case 5:
+                        registrarMovimiento(inventario, scanner, false);
+                        break;
+
+                    case 6:
+                        System.out.println("\nSaliendo del módulo de inventario...");
                         break;
 
                     default:
@@ -68,7 +83,51 @@ public class Main {
         scanner.close();
     }
 
-    //solicita, valida y registra los datos del producto.
+    // HU-03: solicita el código y la cantidad y comunica el resultado de la operación.
+    private static void registrarMovimiento(Inventario inventario, Scanner scanner, boolean esEntrada) {
+        String tipo = esEntrada ? "ENTRADA" : "SALIDA";
+        System.out.println("\n--- REGISTRAR " + tipo + " DE EXISTENCIAS - HU-03 ---");
+
+        System.out.print("Código del producto: ");
+        String codigo = scanner.nextLine().trim();
+
+        Producto producto = inventario.buscarProducto(codigo);
+        if (producto == null) {
+            System.out.println("[RECHAZADA] El código '" + codigo + "' no existe. El inventario no fue modificado.");
+            return;
+        }
+
+        System.out.print("Cantidad de unidades para la " + tipo.toLowerCase() + ": ");
+        final int cantidad;
+        try {
+            cantidad = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("[RECHAZADA] La cantidad debe ser un número entero positivo. El inventario no fue modificado.");
+            return;
+        }
+
+        if (cantidad <= 0) {
+            System.out.println("[RECHAZADA] La cantidad debe ser mayor que cero. El inventario no fue modificado.");
+            return;
+        }
+
+        boolean aceptada = esEntrada
+                ? inventario.registrarEntrada(codigo, cantidad)
+                : inventario.registrarSalida(codigo, cantidad);
+
+        if (aceptada) {
+            System.out.println("[ACEPTADA] " + tipo + " registrada correctamente.");
+            System.out.println("Existencias actuales de " + producto.getNombre() + ": " + producto.getCantidad());
+        } else if (!esEntrada && cantidad > producto.getCantidad()) {
+            System.out.println("[RECHAZADA] No hay existencias suficientes. Disponibles: "
+                    + producto.getCantidad() + ". El inventario no fue modificado.");
+        } else {
+            System.out.println("[RECHAZADA] No se pudo registrar la " + tipo.toLowerCase()
+                    + ". Verifique la cantidad. El inventario no fue modificado.");
+        }
+    }
+
+    // HU-01: solicita, valida y registra los datos del producto.
     private static void registrarProducto(Inventario inventario, Scanner scanner) {
         System.out.println("\n--- REGISTRAR PRODUCTO - HU-01 ---");
 

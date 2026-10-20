@@ -62,6 +62,16 @@ public class Producto {
         return cantidad;
     }
 
+    // HU-03: modifica las existencias solo si la nueva cantidad es válida.
+    public boolean modificarCantidad(int nuevaCantidad) {
+        if (nuevaCantidad < 0) {
+            return false;
+        }
+
+        this.cantidad = nuevaCantidad;
+        return true;
+    }
+
     public double getPrecio() {
         return precio;
     }
