@@ -8,7 +8,7 @@ public class Main {
 
         // Productos de prueba para la HU-02.
         inventario.agregarProducto(new Producto(
-                "P001", "Manzana Roja", "Frutas", 30, 2000.00, "2026-12-20"));
+                "P001", "Manzana Roja", "Frutas", 30, 2000.00, "2026-10-206"));
         inventario.agregarProducto(new Producto(
                 "P002", "Banano Criollo", "Frutas", 45, 1500.00, "2026-12-15"));
 
@@ -21,7 +21,8 @@ public class Main {
             System.out.println("3. Registrar producto");
             System.out.println("4. Registrar entrada de existencias");
             System.out.println("5. Registrar salida de existencias");
-            System.out.println("6. Salir");
+            System.out.println("6. Consultar productos próximos a vencer (HU-04)");
+            System.out.println("7. Salir");
             System.out.print("Seleccione una opción: ");
 
             try {
@@ -68,6 +69,10 @@ public class Main {
                         break;
 
                     case 6:
+                        consultarProximosAVencer(inventario);
+                        break;
+
+                    case 7:
                         System.out.println("\nSaliendo del módulo de inventario...");
                         break;
 
@@ -78,9 +83,34 @@ public class Main {
                 System.out.println("\n[ERROR] Ingrese una opción numérica válida.");
                 opcion = 0;
             }
-        } while (opcion != 3);
+        } while (opcion != 7);
 
         scanner.close();
+    }
+
+    // HU-04: muestra productos con vencimiento entre hoy y los próximos 3 días.
+    private static void consultarProximosAVencer(Inventario inventario) {
+        ArrayList<Producto> productos = inventario.listarProductosProximosAVencer();
+
+        System.out.println("\n--- PRODUCTOS PRÓXIMOS A VENCER - HU-04 ---");
+
+        if (productos.isEmpty()) {
+            System.out.println("[INFO] No hay productos que venzan hoy ni dentro de los próximos 3 días.");
+            return;
+        }
+
+        for (Producto producto : productos) {
+            java.time.LocalDate fecha = java.time.LocalDate.parse(producto.getFechaVencimiento());
+            if (fecha.equals(java.time.LocalDate.now())) {
+                System.out.println("[¡VENCE HOY!] Nombre: " + producto.getNombre()
+                        + " | Cantidad: " + producto.getCantidad()
+                        + " | Fecha de vencimiento: " + producto.getFechaVencimiento());
+            } else {
+                System.out.println("Nombre: " + producto.getNombre()
+                        + " | Cantidad: " + producto.getCantidad()
+                        + " | Fecha de vencimiento: " + producto.getFechaVencimiento());
+            }
+        }
     }
 
     // HU-03: solicita el código y la cantidad y comunica el resultado de la operación.
