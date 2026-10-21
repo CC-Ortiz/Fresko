@@ -3,14 +3,23 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Inventario inventario = new Inventario();
-        Scanner scanner = new Scanner(System.in);
+        ArchivoInventario archivoInventario = new ArchivoInventario();
+        Inventario inventario;
+        try {
+            inventario = archivoInventario.cargarInventario();
+            if (java.nio.file.Files.exists(archivoInventario.getRutaArchivo())) {
+                System.out.println("[ÉXITO] Inventario recuperado desde "
+                        + archivoInventario.getRutaArchivo().toAbsolutePath());
+            } else {
+                System.out.println("[INFO] No existe un archivo guardado. Se inicia con inventario vacío.");
+            }
+        } catch (java.io.IOException e) {
+            System.out.println("[ERROR] No se pudo cargar el inventario: " + e.getMessage());
+            System.out.println("[INFO] Se iniciará una sesión con inventario vacío.");
+            inventario = new Inventario();
+        }
 
-        // Productos de prueba.
-        inventario.agregarProducto(new Producto(
-                "P001", "Manzana Roja", "Frutas", 30, 2000.00, "2026-10-20"));
-        inventario.agregarProducto(new Producto(
-                "P002", "Banano Criollo", "Frutas", 45, 1500.00, "2026-12-15"));
+        Scanner scanner = new Scanner(System.in);
 
         int opcion = 0;
 
@@ -21,8 +30,8 @@ public class Main {
             System.out.println("3. Registrar producto");
             System.out.println("4. Registrar entrada de existencias");
             System.out.println("5. Registrar salida de existencias");
-            System.out.println("6. Consultar productos próximos a vencer (HU-04)");
-            System.out.println("7. Consultar productos vencidos (HU-05)");
+            System.out.println("6. Consultar productos próximos a vencer");
+            System.out.println("7. Consultar productos vencidos");
             System.out.println("8. Salir");
             System.out.print("Seleccione una opción: ");
 
@@ -58,15 +67,15 @@ public class Main {
                         break;
 
                     case 3:
-                        registrarProducto(inventario, scanner);
+                        registrarProducto(inventario, scanner, archivoInventario);
                         break;
 
                     case 4:
-                        registrarMovimiento(inventario, scanner, true);
+                        registrarMovimiento(inventario, scanner, true, archivoInventario);
                         break;
 
                     case 5:
-                        registrarMovimiento(inventario, scanner, false);
+                        registrarMovimiento(inventario, scanner, false, archivoInventario);
                         break;
 
                     case 6:
@@ -137,7 +146,8 @@ public class Main {
     }
 
     // HU-03: registra entradas o salidas de existencias.
-    private static void registrarMovimiento(Inventario inventario, Scanner scanner, boolean esEntrada) {
+    private static void registrarMovimiento(Inventario inventario, Scanner scanner,
+                                            boolean esEntrada, ArchivoInventario archivoInventario) {
         String tipo = esEntrada ? "ENTRADA" : "SALIDA";
         System.out.println("\n--- REGISTRAR " + tipo + " DE EXISTENCIAS - HU-03 ---");
 
@@ -171,6 +181,7 @@ public class Main {
         if (aceptada) {
             System.out.println("[ACEPTADA] " + tipo + " registrada correctamente.");
             System.out.println("Existencias actuales de " + producto.getNombre() + ": " + producto.getCantidad());
+            guardarInventario(archivoInventario, inventario);
         } else if (!esEntrada && cantidad > producto.getCantidad()) {
             System.out.println("[RECHAZADA] No hay existencias suficientes. Disponibles: "
                     + producto.getCantidad() + ". El inventario no fue modificado.");
@@ -181,7 +192,8 @@ public class Main {
     }
 
     // HU-01: registra un nuevo producto.
-    private static void registrarProducto(Inventario inventario, Scanner scanner) {
+    private static void registrarProducto(Inventario inventario, Scanner scanner,
+                                         ArchivoInventario archivoInventario) {
         System.out.println("\n--- REGISTRAR PRODUCTO - HU-01 ---");
 
         try {
@@ -218,6 +230,7 @@ public class Main {
             if (inventario.agregarProducto(producto)) {
                 System.out.println("\n[ÉXITO] Producto registrado correctamente.");
                 System.out.println(producto);
+                guardarInventario(archivoInventario, inventario);
             } else {
                 System.out.println("\n[ERROR] No se pudo registrar el producto. Verifique que el código no esté repetido.");
             }
@@ -226,6 +239,16 @@ public class Main {
             System.out.println("\n[ERROR] La cantidad debe ser un entero y el precio debe ser numérico.");
         } catch (IllegalArgumentException e) {
             System.out.println("\n[ERROR] " + e.getMessage());
+        }
+    }
+    // HU-06: persiste el estado actual después de cada cambio aceptado.
+    private static void guardarInventario(ArchivoInventario archivoInventario, Inventario inventario) {
+        try {
+            archivoInventario.guardarInventario(inventario);
+            System.out.println("[ÉXITO] Inventario guardado en "
+                    + archivoInventario.getRutaArchivo().toAbsolutePath());
+        } catch (java.io.IOException e) {
+            System.out.println("[ERROR] No se pudo guardar el inventario: " + e.getMessage());
         }
     }
 }

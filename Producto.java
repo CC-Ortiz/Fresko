@@ -20,6 +20,10 @@ public class Producto {
         if (categoria == null || categoria.trim().isEmpty()) {
             throw new IllegalArgumentException("La categoría no puede estar vacía.");
         }
+        if (contieneSeparador(codigo) || contieneSeparador(nombre) || contieneSeparador(categoria)) {
+            throw new IllegalArgumentException(
+                    "El código, nombre y categoría no pueden contener | ni saltos de línea.");
+        }
         if (cantidad < 0) {
             throw new IllegalArgumentException("La cantidad no puede ser negativa.");
         }
@@ -44,6 +48,11 @@ public class Producto {
         this.cantidad = cantidad;
         this.precio = precio;
         this.fechaVencimiento = fechaLimpia;
+    }
+
+    // Protege el formato de texto plano: cada producto ocupa una línea y usa | como separador.
+    private static boolean contieneSeparador(String valor) {
+        return valor.contains("|") || valor.contains("\n") || valor.contains("\r");
     }
 
     public String getCodigo() {
