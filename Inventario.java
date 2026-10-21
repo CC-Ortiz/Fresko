@@ -1,4 +1,6 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class Inventario {
     private final ArrayList<Producto> listaProductos;
@@ -55,6 +57,67 @@ public class Inventario {
 
         int nuevaCantidad = producto.getCantidad() - cantidad;
         return producto.modificarCantidad(nuevaCantidad);
+    }
+
+    // HU-04: lista productos que vencen hoy o dentro de los próximos 3 días,
+    // ordenados desde la fecha de vencimiento más cercana.
+    public ArrayList<Producto> listarProductosProximosAVencer() {
+        return listarProductosProximosAVencer(LocalDate.now());
+    }
+
+    // Sobrecarga para facilitar las pruebas con una fecha de referencia concreta.
+    public ArrayList<Producto> listarProductosProximosAVencer(LocalDate fechaActual) {
+        ArrayList<Producto> proximosAVencer = new ArrayList<>();
+
+        if (fechaActual == null) {
+            return proximosAVencer;
+        }
+
+        LocalDate limite = fechaActual.plusDays(3);
+
+        for (Producto producto : listaProductos) {
+            LocalDate fechaVencimiento = LocalDate.parse(producto.getFechaVencimiento());
+
+            // Incluye los que vencen hoy y hasta 3 días después; excluye vencidos.
+            if (!fechaVencimiento.isBefore(fechaActual)
+                    && !fechaVencimiento.isAfter(limite)) {
+                proximosAVencer.add(producto);
+            }
+        }
+
+        proximosAVencer.sort(Comparator.comparing(
+                producto -> LocalDate.parse(producto.getFechaVencimiento())));
+
+        return proximosAVencer;
+    }
+
+    // HU-05: identifica y lista los productos cuya fecha de vencimiento es anterior a la actual.
+    public ArrayList<Producto> consultarVencidos() {
+        return consultarVencidos(LocalDate.now());
+    }
+
+    // Sobrecarga de HU-05 para facilitar pruebas con fechas específicas.
+    public ArrayList<Producto> consultarVencidos(LocalDate fechaActual) {
+        ArrayList<Producto> listaVencidos = new ArrayList<>();
+
+        if (fechaActual == null) {
+            return listaVencidos;
+        }
+
+        for (Producto producto : listaProductos) {
+            LocalDate fechaVencimiento = LocalDate.parse(producto.getFechaVencimiento());
+
+            // Si la fecha de vencimiento es anterior a la fecha actual, ya venció
+            if (fechaVencimiento.isBefore(fechaActual)) {
+                listaVencidos.add(producto);
+            }
+        }
+
+        // Ordenarlos por fecha de vencimiento
+        listaVencidos.sort(Comparator.comparing(
+                producto -> LocalDate.parse(producto.getFechaVencimiento())));
+
+        return listaVencidos;
     }
 
     // HU-02: busca por código sin modificar el inventario.

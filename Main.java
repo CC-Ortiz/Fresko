@@ -6,9 +6,9 @@ public class Main {
         Inventario inventario = new Inventario();
         Scanner scanner = new Scanner(System.in);
 
-        // Productos de prueba para la HU-02.
+        // Productos de prueba.
         inventario.agregarProducto(new Producto(
-                "P001", "Manzana Roja", "Frutas", 30, 2000.00, "2026-12-20"));
+                "P001", "Manzana Roja", "Frutas", 30, 2000.00, "2026-10-20"));
         inventario.agregarProducto(new Producto(
                 "P002", "Banano Criollo", "Frutas", 45, 1500.00, "2026-12-15"));
 
@@ -21,7 +21,9 @@ public class Main {
             System.out.println("3. Registrar producto");
             System.out.println("4. Registrar entrada de existencias");
             System.out.println("5. Registrar salida de existencias");
-            System.out.println("6. Salir");
+            System.out.println("6. Consultar productos próximos a vencer (HU-04)");
+            System.out.println("7. Consultar productos vencidos (HU-05)");
+            System.out.println("8. Salir");
             System.out.print("Seleccione una opción: ");
 
             try {
@@ -68,6 +70,14 @@ public class Main {
                         break;
 
                     case 6:
+                        consultarProximosAVencer(inventario);
+                        break;
+
+                    case 7:
+                        consultarVencidos(inventario);
+                        break;
+
+                    case 8:
                         System.out.println("\nSaliendo del módulo de inventario...");
                         break;
 
@@ -78,12 +88,55 @@ public class Main {
                 System.out.println("\n[ERROR] Ingrese una opción numérica válida.");
                 opcion = 0;
             }
-        } while (opcion != 3);
+        } while (opcion != 8);
 
         scanner.close();
     }
 
-    // HU-03: solicita el código y la cantidad y comunica el resultado de la operación.
+    // HU-04: muestra productos con vencimiento entre hoy y los próximos 3 días.
+    private static void consultarProximosAVencer(Inventario inventario) {
+        ArrayList<Producto> productos = inventario.listarProductosProximosAVencer();
+
+        System.out.println("\n--- PRODUCTOS PRÓXIMOS A VENCER - HU-04 ---");
+
+        if (productos.isEmpty()) {
+            System.out.println("[INFO] No hay productos que venzan hoy ni dentro de los próximos 3 días.");
+            return;
+        }
+
+        for (Producto producto : productos) {
+            java.time.LocalDate fecha = java.time.LocalDate.parse(producto.getFechaVencimiento());
+            if (fecha.equals(java.time.LocalDate.now())) {
+                System.out.println("[¡VENCE HOY!] Nombre: " + producto.getNombre()
+                        + " | Cantidad: " + producto.getCantidad()
+                        + " | Fecha de vencimiento: " + producto.getFechaVencimiento());
+            } else {
+                System.out.println("Nombre: " + producto.getNombre()
+                        + " | Cantidad: " + producto.getCantidad()
+                        + " | Fecha de vencimiento: " + producto.getFechaVencimiento());
+            }
+        }
+    }
+
+    // HU-05: muestra los productos que ya vencieron.
+    private static void consultarVencidos(Inventario inventario) {
+        ArrayList<Producto> vencidos = inventario.consultarVencidos();
+
+        System.out.println("\n--- PRODUCTOS VENCIDOS - HU-05 ---");
+
+        if (vencidos.isEmpty()) {
+            System.out.println("[INFO] No existen productos vencidos en el inventario.");
+            return;
+        }
+
+        for (Producto producto : vencidos) {
+            System.out.println("Nombre: " + producto.getNombre()
+                    + " | Cantidad: " + producto.getCantidad()
+                    + " | Fecha de vencimiento: " + producto.getFechaVencimiento());
+        }
+    }
+
+    // HU-03: registra entradas o salidas de existencias.
     private static void registrarMovimiento(Inventario inventario, Scanner scanner, boolean esEntrada) {
         String tipo = esEntrada ? "ENTRADA" : "SALIDA";
         System.out.println("\n--- REGISTRAR " + tipo + " DE EXISTENCIAS - HU-03 ---");
@@ -127,7 +180,7 @@ public class Main {
         }
     }
 
-    // HU-01: solicita, valida y registra los datos del producto.
+    // HU-01: registra un nuevo producto.
     private static void registrarProducto(Inventario inventario, Scanner scanner) {
         System.out.println("\n--- REGISTRAR PRODUCTO - HU-01 ---");
 
@@ -162,7 +215,6 @@ public class Main {
             Producto producto = new Producto(
                     codigo, nombre, categoria, cantidad, precio, fechaVencimiento);
 
-            // Se verifica también dentro de Inventario para evitar códigos duplicados.
             if (inventario.agregarProducto(producto)) {
                 System.out.println("\n[ÉXITO] Producto registrado correctamente.");
                 System.out.println(producto);
